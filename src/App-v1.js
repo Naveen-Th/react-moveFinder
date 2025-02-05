@@ -9,7 +9,10 @@ export default function App() {
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [watched, setWatched] = useState([]);
+  const [watched, setWatched] = useState(
+    () => 
+    JSON.parse(localStorage.getItem('watched')) 
+  );
 
   const selected = (id) => {
     setSelectedMovie((prevSelected) => (prevSelected === id ? null : id));
@@ -23,6 +26,13 @@ export default function App() {
     setWatched((prevWatched) => prevWatched.filter((movie) => movie.imdbID !== imdbID));
   };
 
+  function handleAddWatched(movie) {
+    setWatched((prevWatched) => [...prevWatched, movie]);
+  }
+
+  useEffect(function(){
+    localStorage.setItem('watched', JSON.stringify(watched));
+  },[watched]);
 
   useEffect(() => {
     async function fetchMovieDetails() {
@@ -56,10 +66,7 @@ export default function App() {
     fetchMovieDetails();
   }, [search]);
 
-  function handleAddWatched(movie) {
-    setWatched((prevWatched) => [...prevWatched, movie]);
-  }
-
+  
   return (
     <>
       <NavBar>
@@ -197,7 +204,6 @@ function MovieDetails({ selectedMovie, selected, handleAddWatched }) {
   };
 
   const handleAdd = () => {
-    if (movieDetails) {
       const newMovie = {
         imdbID:movieDetails.imdbID,
         title: movieDetails.Title,
@@ -205,8 +211,9 @@ function MovieDetails({ selectedMovie, selected, handleAddWatched }) {
         poster: movieDetails.Poster,
       };
       handleAddWatched(newMovie);
-    }
   };
+
+
 
   useEffect(() => {
     async function fetchMovieDetails() {
@@ -232,10 +239,9 @@ function MovieDetails({ selectedMovie, selected, handleAddWatched }) {
       }
     }
 
-    if (selectedMovie) {
-      fetchMovieDetails();
-    }
+    fetchMovieDetails();
   }, [selectedMovie]);
+
 
   if (loading) {
     return <p className="msg">Loading movie details...</p>;
