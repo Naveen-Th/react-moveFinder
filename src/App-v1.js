@@ -29,7 +29,8 @@ export default function App() {
       try {
         setLoading(true);
         setError('');
-        const url = `http://www.omdbapi.com/?apikey=${apiKey}&s=${search}`;
+        const url = `https://www.omdbapi.com/?apikey=${apiKey}&s=${search}`;
+        
         const res = await fetch(url);
         if (!res.ok) {
           throw new Error('Network response was not ok');
@@ -214,7 +215,7 @@ function MovieDetails({ selectedMovie, selected, handleAddWatched }) {
         setError('');
 
         const res = await fetch(
-          `http://www.omdbapi.com/?apikey=${apiKey}&i=${selectedMovie}`
+          `https://www.omdbapi.com/?apikey=${apiKey}&i=${selectedMovie}`
         );
 
         if (!res.ok) {
