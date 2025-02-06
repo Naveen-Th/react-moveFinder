@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import img from './assets/Main-Logo.png';
 
 const apiKey = "6add04ac";
@@ -10,8 +10,7 @@ export default function App() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [watched, setWatched] = useState(
-    () => 
-    JSON.parse(localStorage.getItem('watched')) 
+    () => JSON.parse(localStorage.getItem('watched'))
   );
 
   const selected = (id) => {
@@ -30,8 +29,8 @@ export default function App() {
     setWatched((prevWatched) => [...prevWatched, movie]);
   }
 
-  useEffect(function(){
-    localStorage.setItem('watched', JSON.stringify(watched));
+  useEffect(()=>{
+    localStorage.setItem('watched',JSON.stringify(watched));
   },[watched]);
 
   useEffect(() => {
@@ -92,7 +91,7 @@ export default function App() {
             <MovieDetails selectedMovie={selectedMovie} selected={setSelectedMovie} handleAddWatched={handleAddWatched} />
           ) : (
             <>
-              <WatchedSummary />
+              <WatchedSummary watched={watched}/>
               <WatchedMoviesList watched={watched} handleDelete={handleDelete}/>
             </>
           )}
@@ -133,6 +132,10 @@ function Logo() {
 }
 
 function Search({ search, handleSearch }) {
+  const inputRef = useRef(null);
+  useEffect(() => {
+    inputRef.current.focus();
+  },[]);
   return (
     <input
       className="search"
@@ -140,6 +143,7 @@ function Search({ search, handleSearch }) {
       placeholder="Search movies..."
       onChange={handleSearch}
       value={search}
+      ref={inputRef}
     />
   );
 }
@@ -272,10 +276,12 @@ function MovieDetails({ selectedMovie, selected, handleAddWatched }) {
   );
 }
 
-function WatchedSummary() {
+function WatchedSummary({watched}) {
+
   return (
     <div className="summary">
       <h2>Movies you watched</h2>
+      {watched.length>0 ? <h3 >Watched : <strong style={{fontSize:'15px'}}>{watched.length}</strong></h3> : <h4 style={{color:'red'}}>No Movies Added To Watchlist</h4>}
     </div>
   );
 }
@@ -283,7 +289,7 @@ function WatchedSummary() {
 function WatchedMoviesList({ watched,handleDelete }) {
   return (
     <ul className="list">
-      {watched.map((movie, index) => (
+      {watched?.map((movie, index) => (
         <WatchedMovie key={index} movie={movie} handleDelete={handleDelete} />
       ))}
     </ul>
