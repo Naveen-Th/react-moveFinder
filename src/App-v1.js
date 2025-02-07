@@ -9,7 +9,7 @@ export default function App() {
   const [search, setSearch] = useState("interstellar");
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [watched, setWatched] = useState(
-    () => JSON.parse(localStorage.getItem('watched'))
+    () => JSON.parse(localStorage.getItem('watched')) || []
   );
 
   useEffect(()=>{
@@ -36,7 +36,7 @@ export default function App() {
 
   function handleAddWatched(movie) {
     setWatched((prevWatched) => [...prevWatched, movie]);
-    setSelectedMovie(null);
+    setSelectedMovie(null)
   }
 
   
