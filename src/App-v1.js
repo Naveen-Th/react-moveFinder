@@ -1,17 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import img from './assets/Main-Logo.png';
+import { useMovieBySearch } from "./useMovie";
+import { useMovieById } from "./useMovie";
 
-const apiKey = "6add04ac";
+//const apiKey = "6add04ac";
 
 export default function App() {
-  const [movie, setMovie] = useState([]);
   const [search, setSearch] = useState("interstellar");
   const [selectedMovie, setSelectedMovie] = useState(null);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   const [watched, setWatched] = useState(
     () => JSON.parse(localStorage.getItem('watched'))
   );
+
+  useEffect(()=>{
+    localStorage.setItem('watched',JSON.stringify(watched));
+  },[watched]);
+
+  const { movie, error, loading } = useMovieBySearch(search);
 
   const selected = (id) => {
     setSelectedMovie((prevSelected) => (prevSelected === id ? null : id));
@@ -23,48 +28,18 @@ export default function App() {
 
   const handleDelete = (imdbID) => {
     setWatched((prevWatched) => prevWatched.filter((movie) => movie.imdbID !== imdbID));
-  };
+  }
+
+  function handleDeleteAll() {
+    setWatched([]);
+   }
 
   function handleAddWatched(movie) {
     setWatched((prevWatched) => [...prevWatched, movie]);
+    setSelectedMovie(null);
   }
 
-  useEffect(()=>{
-    localStorage.setItem('watched',JSON.stringify(watched));
-  },[watched]);
-
-  useEffect(() => {
-    async function fetchMovieDetails() {
-      try {
-        setLoading(true);
-        setError('');
-        const url = `https://www.omdbapi.com/?apikey=${apiKey}&s=${search}`;
-        
-        const res = await fetch(url);
-        if (!res.ok) {
-          throw new Error('Network response was not ok');
-        }
-
-        const data = await res.json();
-        if (data.Response === 'False') {
-          throw new Error(data.Error);
-        }
-        setMovie(data.Search);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (search.length <= 3) {
-      setMovie([]);
-      setError('');
-      return;
-    }
-    fetchMovieDetails();
-  }, [search]);
-
+  
   
   return (
     <>
@@ -92,7 +67,7 @@ export default function App() {
           ) : (
             <>
               <WatchedSummary watched={watched}/>
-              <WatchedMoviesList watched={watched} handleDelete={handleDelete}/>
+              <WatchedMoviesList watched={watched} handleDelete={handleDelete} handleDeleteAll={handleDeleteAll}/>
             </>
           )}
         </Box>
@@ -133,9 +108,11 @@ function Logo() {
 
 function Search({ search, handleSearch }) {
   const inputRef = useRef(null);
+  
   useEffect(() => {
     inputRef.current.focus();
   },[]);
+
   return (
     <input
       className="search"
@@ -149,8 +126,9 @@ function Search({ search, handleSearch }) {
 }
 
 function NumResults({ movies }) {
+  
   return (
-    <p className="num-results">
+    <p className="num-results" >
       Found <strong>{movies.length}</strong> results
     </p>
   );
@@ -199,10 +177,9 @@ function Movie({ movie, selected }) {
 }
 
 function MovieDetails({ selectedMovie, selected, handleAddWatched }) {
-  const [movieDetails, setMovieDetails] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
+  const {movieDetails,loading,error} = useMovieById(selectedMovie);
+  
   const click = () => {
     selected(null); // Deselect the movie
   };
@@ -216,36 +193,6 @@ function MovieDetails({ selectedMovie, selected, handleAddWatched }) {
       };
       handleAddWatched(newMovie);
   };
-
-
-
-  useEffect(() => {
-    async function fetchMovieDetails() {
-      try {
-        setLoading(true);
-        setError('');
-
-        const res = await fetch(
-          `https://www.omdbapi.com/?apikey=${apiKey}&i=${selectedMovie}`
-        );
-
-        if (!res.ok) {
-          throw new Error('Network response was not ok');
-        }
-
-        const data = await res.json();
-        setMovieDetails(data);
-
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchMovieDetails();
-  }, [selectedMovie]);
-
 
   if (loading) {
     return <p className="msg">Loading movie details...</p>;
@@ -286,23 +233,28 @@ function WatchedSummary({watched}) {
   );
 }
 
-function WatchedMoviesList({ watched,handleDelete }) {
+function WatchedMoviesList({ watched,handleDelete,handleDeleteAll }) {
   return (
+    <>
     <ul className="list">
       {watched?.map((movie, index) => (
         <WatchedMovie key={index} movie={movie} handleDelete={handleDelete} />
       ))}
     </ul>
+    {watched.length > 0 && <button onClick={handleDeleteAll} className="btn-add" style={{marginLeft:'2em'}}>Remove All</button>}
+    </>
   );
 }
 
 function WatchedMovie({ movie,handleDelete }) {
   return (
+    <>
     <li className="watched-movie">
       <img src={movie.poster} alt={`${movie.title} poster`} />
       <h3>{movie.title}</h3>
       <p>{movie.year}</p>
       <span onClick={() => handleDelete(movie.imdbID)}>❌</span>
     </li>
+    </>
   );
 }
