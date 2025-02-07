@@ -228,7 +228,7 @@ function WatchedSummary({watched}) {
   return (
     <div className="summary">
       <h2>Movies you watched</h2>
-      {watched.length>0 ? <h3 >Watched : <strong style={{fontSize:'15px'}}>{watched.length}</strong></h3> : <h4 style={{color:'red'}}>No Movies Added To Watchlist</h4>}
+      {watched?.length>0 ? <h3 >Watched : <strong style={{fontSize:'15px'}}>{watched.length}</strong></h3> : <h4 style={{color:'red'}}>No Movies Added To Watchlist</h4>}
     </div>
   );
 }
@@ -241,7 +241,7 @@ function WatchedMoviesList({ watched,handleDelete,handleDeleteAll }) {
         <WatchedMovie key={index} movie={movie} handleDelete={handleDelete} />
       ))}
     </ul>
-    {watched.length > 0 && <button onClick={handleDeleteAll} className="btn-add" style={{marginLeft:'2em'}}>Remove All</button>}
+    {watched?.length > 0 && <button onClick={handleDeleteAll} className="btn-add" style={{marginLeft:'2em'}}>Remove All</button>}
     </>
   );
 }
